@@ -1,0 +1,7 @@
+frontend/
+.git/
+.qodo/
+*.md
+.gitignore
+backend/node_modules/
+backend/uploads/
