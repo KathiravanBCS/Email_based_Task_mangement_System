@@ -21,6 +21,9 @@ const cronJobs = require('./src/services/cron.service');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust proxy (required for Render, Heroku, etc.)
+app.set('trust proxy', 1);
+
 // Security Middleware
 app.use(helmet());
 app.use(cors({
