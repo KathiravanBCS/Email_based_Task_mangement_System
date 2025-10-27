@@ -7,7 +7,7 @@ async function seedDatabase() {
     console.log('🌱 Seeding database...');
 
     // Create admin user
-    const hashedPassword = await bcrypt.hash('admin123', 10);
+    const hashedPassword = await bcrypt.hash('admin123', parseInt(process.env.BCRYPT_ROUNDS) || 10);
     
     const adminResult = await db.query(
       `INSERT INTO users (username, email, password_hash, full_name, role) 
