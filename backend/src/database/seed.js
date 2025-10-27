@@ -12,7 +12,7 @@ async function seedDatabase() {
     const adminResult = await db.query(
       `INSERT INTO users (username, email, password_hash, full_name, role) 
        VALUES ($1, $2, $3, $4, $5) 
-       ON CONFLICT (email) DO NOTHING
+       ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash
        RETURNING id`,
       ['admin', 'admin@taskmanager.com', hashedPassword, 'Admin User', 'admin']
     );
