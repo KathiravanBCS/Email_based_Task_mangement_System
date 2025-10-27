@@ -1,9 +1,16 @@
 const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 
+// Configure SendGrid if API key is available
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
+
+// Configure Nodemailer for SMTP (fallback)
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: process.env.EMAIL_PORT,
-  secure: false,
+  secure: process.env.EMAIL_PORT == 465,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD,
@@ -12,19 +19,36 @@ const transporter = nodemailer.createTransport({
 
 const sendEmail = async (options) => {
   try {
-    const mailOptions = {
-      from: process.env.EMAIL_FROM,
-      to: options.to,
-      subject: options.subject,
-      html: options.html,
-      text: options.text,
-    };
+    // Use SendGrid if API key is configured
+    if (process.env.SENDGRID_API_KEY) {
+      const msg = {
+        to: options.to,
+        from: process.env.EMAIL_FROM || process.env.SENDGRID_FROM_EMAIL,
+        subject: options.subject,
+        html: options.html,
+        text: options.text,
+      };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent:', info.messageId);
-    return info;
+      const result = await sgMail.send(msg);
+      console.log('✅ Email sent via SendGrid:', options.to);
+      return result;
+    } 
+    // Otherwise use SMTP
+    else {
+      const mailOptions = {
+        from: process.env.EMAIL_FROM,
+        to: options.to,
+        subject: options.subject,
+        html: options.html,
+        text: options.text,
+      };
+
+      const info = await transporter.sendMail(mailOptions);
+      console.log('✅ Email sent via SMTP:', info.messageId);
+      return info;
+    }
   } catch (error) {
-    console.error('Email error:', error);
+    console.error('❌ Email error:', error);
     throw error;
   }
 };
